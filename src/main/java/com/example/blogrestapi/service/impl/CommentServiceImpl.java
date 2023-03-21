@@ -8,6 +8,7 @@ import com.example.blogrestapi.payload.CommentDto;
 import com.example.blogrestapi.repository.CommentRepository;
 import com.example.blogrestapi.repository.PostRepository;
 import com.example.blogrestapi.service.CommentService;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -22,6 +23,8 @@ public class CommentServiceImpl implements CommentService {
     private CommentRepository commentRepository;
     @Autowired
     private PostRepository postRepository;
+    @Autowired
+    private ModelMapper modelMapper;
 
 
     @Override
@@ -83,7 +86,6 @@ public class CommentServiceImpl implements CommentService {
             throw new BlogAPIException(HttpStatus.BAD_REQUEST,"The comment doesn't belongs to post.");
         }else {
 
-
             existingComment.setBody(commentDto.getBody() != null ?
                     commentDto.getBody() : existingComment.getBody());
 
@@ -112,19 +114,11 @@ public class CommentServiceImpl implements CommentService {
     }
 
     private Comment dtoToEntity(CommentDto commentDto){
-        Comment comment = new Comment();
-        comment.setId(comment.getId());
-        comment.setEmail(commentDto.getEmail());
-        comment.setName(commentDto.getName());
-        comment.setBody(commentDto.getBody());
+        Comment comment = modelMapper.map(commentDto,Comment.class);
         return comment;
     }
     private CommentDto entityToDto(Comment comment){
-        CommentDto commentDto = new CommentDto();
-        commentDto.setId(comment.getId());
-        commentDto.setEmail(comment.getEmail());
-        commentDto.setName(comment.getName());
-        commentDto.setBody(comment.getBody());
+        CommentDto commentDto = modelMapper.map(comment,CommentDto.class);
         return commentDto;
     }
 }

@@ -1,8 +1,8 @@
 package com.example.blogrestapi.controller;
 
-import com.example.blogrestapi.entity.Comment;
 import com.example.blogrestapi.payload.CommentDto;
 import com.example.blogrestapi.service.CommentService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +19,7 @@ public class CommentController {
 
     //http://localhost:8080/api/comment/create/4
     @PostMapping("/create/{id}")
-    public ResponseEntity<CommentDto> createComment(@RequestBody CommentDto commentDto,
+    public ResponseEntity<CommentDto> createComment(@Valid @RequestBody CommentDto commentDto,
                                         @PathVariable("id")Long postId){
 
         return new ResponseEntity<>( commentService.createComment(postId,commentDto),
@@ -44,7 +44,7 @@ public class CommentController {
     public ResponseEntity<CommentDto> updateComment(
             @PathVariable("commentId")Long cmtId,
             @PathVariable("postId")Long postId,
-            @RequestBody CommentDto commentDto
+            @Valid @RequestBody CommentDto commentDto
     ){
         CommentDto commentDto1 = commentService.updateComment(cmtId,postId,commentDto);
 

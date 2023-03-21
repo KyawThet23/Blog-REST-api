@@ -1,8 +1,12 @@
 package com.example.blogrestapi.exception;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+@Getter
+@Setter
 @ResponseStatus(value = HttpStatus.NOT_FOUND)
 public class ResourceNotFoundException extends RuntimeException{
 
@@ -17,15 +21,5 @@ public class ResourceNotFoundException extends RuntimeException{
         this.resourceName = resourceName;
         this.fieldName = fieldName;
         this.fieldValue = fieldValue;
-    }
-
-    public String getResourceName() {
-        return resourceName;
-    }
-    public String getFieldName() {
-        return fieldName;
-    }
-    public Long getFieldValue() {
-        return fieldValue;
     }
 }

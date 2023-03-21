@@ -1,7 +1,13 @@
 package com.example.blogrestapi.controller;
 
+import com.example.blogrestapi.entity.Post;
 import com.example.blogrestapi.payload.PostDto;
 import com.example.blogrestapi.service.PostService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,13 +19,20 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/post")
+@Tag(
+        name = "CRUD REST API for post"
+)
 public class PostController {
 
     @Autowired
     private PostService postService;
 
-    @PostMapping("/")
-    public ResponseEntity<PostDto> create(@RequestBody PostDto postDto){
+    @SecurityRequirement( name = "Bear Authentication" )
+    @Operation( summary = "To create post",
+                description = "Post is saved into database")
+    @ApiResponse( responseCode = "201",
+                  description = "HTTP created code")
+    @PostMapping("/") public ResponseEntity<PostDto> create(@Valid @RequestBody PostDto postDto){
         return new ResponseEntity<>(postService.createPost(postDto), HttpStatus.CREATED);
     }
 
@@ -34,20 +47,25 @@ public class PostController {
         return postService.getAllPost(pageNo,pageSize,sortBy,sortDir);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/id/{id}")
     public ResponseEntity<PostDto> getById(@PathVariable("id")Long id){
         return ResponseEntity.ok(postService.getPostById(id));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<PostDto> updatePost(@RequestBody PostDto postDto,
+    public ResponseEntity<PostDto> updatePost(@Valid @RequestBody PostDto postDto,
                                               @PathVariable Long id){
         PostDto response = postService.updatePost(postDto,id);
         return new  ResponseEntity<>(response,HttpStatus.OK);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/delete/{id}")
     public void deletePost(@PathVariable("id")Long id){
         postService.deletePost(id);
+    }
+
+    @GetMapping("/catId/{id}")
+    public List<PostDto> getAllPostByCategory(@PathVariable Long id){
+        return postService.getAllPostById(id);
     }
 }

@@ -1,10 +1,14 @@
 package com.example.blogrestapi.service.impl;
 
+import com.example.blogrestapi.entity.Category;
 import com.example.blogrestapi.entity.Post;
 import com.example.blogrestapi.exception.ResourceNotFoundException;
+import com.example.blogrestapi.payload.CategoryDto;
 import com.example.blogrestapi.payload.PostDto;
+import com.example.blogrestapi.repository.CategoryRepository;
 import com.example.blogrestapi.repository.PostRepository;
 import com.example.blogrestapi.service.PostService;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -13,6 +17,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -20,11 +25,24 @@ public class PostServiceImpl implements PostService {
 
     @Autowired
     private PostRepository postRepository;
+    @Autowired
+    private CategoryRepository catRepo;
+    @Autowired
+    private ModelMapper modelMapper;
+
+    Category findCategory(Long id){
+        Category category = catRepo.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Category","Id",id));
+        return category;
+    }
+
     @Override
     public PostDto createPost(PostDto postDto) {
 
         //request state to entity
+        Category category = findCategory(postDto.getCatId());
         Post post = dtoToEntity(postDto);
+        post.setCategory(category);
         postRepository.save(post);
 
         //entity to response state
@@ -43,6 +61,8 @@ public class PostServiceImpl implements PostService {
         Pageable pageable = PageRequest.of(pageNo,pageSize,sort);
 
         Page<Post> posts = postRepository.findAll(pageable);
+
+        System.out.println(posts);
 
         //Content for page
 
@@ -76,29 +96,45 @@ public class PostServiceImpl implements PostService {
         existingPost.setContent(postDto.getContent() != null ?
                 postDto.getContent() : existingPost.getContent());
 
+        existingPost.setCategory(findCategory(postDto.getCatId()) != null ?
+               findCategory(postDto.getCatId()) : existingPost.getCategory() );
+
         postRepository.save(existingPost);
         PostDto postDto1 = entityToDto(existingPost);
         return postDto1;
     }
 
     @Override
-    public void deletePost(Long id) {
-        postRepository.deleteById(id);
+    public void deletePost(Long id){
+
+        if (postRepository.existsById(id)){
+            postRepository.deleteById(id);
+        }else {
+            throw new ResourceNotFoundException("Post","Id",id);
+        }
+    }
+
+    @Override
+    public List<PostDto> getAllPostById(Long id) {
+        Category category = findCategory(id);
+
+        List<Post> posts = postRepository.findAllByCategory_Id(id);
+
+        return posts.stream()
+                .map(post -> entityToDto(post))
+                .collect(Collectors.toList());
     }
 
     private PostDto entityToDto(Post post){
-        PostDto response = new PostDto();
-        response.setId(post.getId());
-        response.setTitle(post.getTitle());
-        response.setDescription(post.getDescription());
-        response.setContent(post.getContent());
+
+        PostDto response = modelMapper.map(post,PostDto.class);
+
         return response;
     }
     private Post dtoToEntity(PostDto postDto){
-        Post post = new Post();
-        post.setTitle(postDto.getTitle());
-        post.setDescription(postDto.getDescription());
-        post.setContent(postDto.getContent());
+
+        Post post = modelMapper.map(postDto,Post.class);
+
         return post;
     }
 }

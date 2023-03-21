@@ -3,13 +3,14 @@ package com.example.blogrestapi.entity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @Entity
 @Table(name = "Post")
@@ -27,6 +28,11 @@ public class Post {
     mappedBy = "post",
     orphanRemoval = true)
     private Set<Comment> comments = new HashSet<>();
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id")
+    private Category category;
+
     public Post() {}
 
     public void addComment(Comment comment){
